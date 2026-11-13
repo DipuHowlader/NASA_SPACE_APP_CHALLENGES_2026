@@ -1,8 +1,10 @@
 name: Deploy to Vercel
 
+# Production deploys run automatically through the Vercel GitHub integration
+# once the project is imported in the Vercel dashboard.
+# This workflow is only for manual redeployments from CI.
 on:
-  push:
-    branches: [main]
+  workflow_dispatch:
   workflow_dispatch:
 
 jobs:
