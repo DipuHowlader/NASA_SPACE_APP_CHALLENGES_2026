@@ -66,8 +66,7 @@
   <header>
     <h1>🪐 Planetary Analog Finder</h1>
     <span class="badge">NASA Space Apps Challenge</span>
-  </header>
-  <p class="sub">A machine-learning similarity engine that scans <b>50 curated Earth environments</b> — from Atacama dry-limit soils to Lonar's basalt impact crater — and ranks them as analogs for candidate <b>Moon-base</b> and <b>Mars-landing</b> sites, using NASA POWER climate data (2001–2025) plus curated geology, with learned feature weights and an explicit "where the analogy breaks down" report for every match.</p>
+  </header>  <p class="sub">A similarity engine that ranks <b>50 Earth environments</b> as analogs for candidate <b>Moon-base</b> and <b>Mars-landing</b> sites, using NASA POWER climate data (2001–2025) plus geology and terrain attributes, with learned feature weights and a "where the analogy breaks down" report for every match.</p>
   <p class="status" id="status">Checking service…</p>
 
   <div class="grid">
@@ -84,10 +83,7 @@
         <option value="12">Top 12</option>
       </select>
       <button id="go">Find Earth analogs</button>
-      <p class="hint">
-        Get a key: run <code>npm run key -- --name "your-name"</code> in the project repo (hashed, rate-limited).<br />
-        Full API: <code>GET /api/targets</code>, <code>GET /api/sites</code>, <code>GET /api/model</code>, <code>GET /api/search?target=…</code>
-      </p>
+      <p class="hint">Access keys are issued by the team.</p>
       <div class="targetinfo" id="targetinfo"></div>
     </div>
 
@@ -101,10 +97,7 @@
   </div>
 
   <footer>
-    Data: <a href="https://power.larc.nasa.gov/" target="_blank" rel="noopener">NASA POWER climatology (2001–2025)</a>,
-    MOLA/LOLA/Diviner/REMS/MEDA mission measurements (target values), curated analog literature.
-    Model: ridge-learned weights over expert-labeled analog pairs — <a href="/api/model" target="_blank" rel="noopener">model card</a>.
-    Built for the NASA Space Apps Challenge.
+    Data: <a href="https://power.larc.nasa.gov/" target="_blank" rel="noopener">NASA POWER climatology (2001–2025)</a>, MOLA/LOLA/Diviner/REMS/MEDA mission measurements. Similarity weights fitted from published analog studies.
   </footer>
 </div>
 
