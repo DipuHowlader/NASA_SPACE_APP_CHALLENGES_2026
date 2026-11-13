@@ -1,0 +1,17 @@
+# Node
+node_modules/
+.vercel/
+.env
+.env.local
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+
+# OS
+Thumbs.db
+.DS_Store
+
+# Power raw cache is committed (it is part of the dataset provenance),
+# so nothing NASA-related is ignored.

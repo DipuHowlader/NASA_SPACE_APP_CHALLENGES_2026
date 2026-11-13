@@ -1,0 +1,18 @@
+{
+  "name": "planetary-analog-finder",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "NASA Space Apps Challenge — ML-assisted global search for terrestrial analogs of Moon and Mars exploration sites. Zero-dependency serverless API on Vercel.",
+  "scripts": {
+    "fetch:nasa": "node scripts/fetch_power.mjs",
+    "build:data": "python scripts/build_dataset.py",
+    "train": "python scripts/train_model.py",
+    "key": "node scripts/generate_key.mjs",
+    "test": "node scripts/test_ranking.mjs",
+    "pipeline": "npm run fetch:nasa && npm run build:data && npm run train && npm run test"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

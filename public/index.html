@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Planetary Analog Finder — Earth ↔ Moon ↔ Mars</title>
+<meta name="description" content="ML-assisted global search for terrestrial analogs of Moon and Mars exploration sites. NASA Space Apps Challenge." />
+<style>
+  :root {
+    --bg: #0b0e1a; --panel: #131829; --panel2: #1a2138; --line: #26304f;
+    --text: #e8ecf8; --muted: #93a0c4; --accent: #64b5ff; --good: #4ade80; --bad: #f87171; --warn: #fbbf24;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: radial-gradient(1200px 600px at 70% -10%, #16204a 0%, var(--bg) 60%); color: var(--text);
+         font: 15px/1.55 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; min-height: 100vh; }
+  .wrap { max-width: 980px; margin: 0 auto; padding: 28px 20px 60px; }
+  header { display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap; margin-bottom: 6px; }
+  h1 { font-size: 26px; letter-spacing: 0.2px; }
+  .badge { font-size: 12px; color: var(--accent); border: 1px solid var(--line); border-radius: 999px; padding: 3px 10px; }
+  .sub { color: var(--muted); max-width: 760px; margin-bottom: 22px; }
+  .status { font-size: 13px; color: var(--muted); margin-bottom: 20px; }
+  .status b { color: var(--good); }
+  .grid { display: grid; grid-template-columns: 300px 1fr; gap: 18px; }
+  @media (max-width: 760px) { .grid { grid-template-columns: 1fr; } }
+  .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 18px; }
+  .panel h2 { font-size: 13px; text-transform: uppercase; letter-spacing: 1.2px; color: var(--muted); margin-bottom: 12px; }
+  label { display: block; font-size: 12px; color: var(--muted); margin: 12px 0 6px; }
+  select, input { width: 100%; background: var(--panel2); color: var(--text); border: 1px solid var(--line);
+                  border-radius: 10px; padding: 10px 12px; font-size: 14px; outline: none; }
+  select:focus, input:focus { border-color: var(--accent); }
+  button { width: 100%; margin-top: 16px; background: linear-gradient(135deg, #2b6cb0, #1a4f8a); color: #fff;
+           border: none; border-radius: 10px; padding: 12px; font-size: 15px; font-weight: 600; cursor: pointer; }
+  button:hover { filter: brightness(1.15); }
+  button:disabled { opacity: 0.5; cursor: wait; }
+  .hint { font-size: 12px; color: var(--muted); margin-top: 10px; line-height: 1.5; }
+  .hint code { background: var(--panel2); padding: 1px 6px; border-radius: 6px; font-size: 11px; }
+  .targetinfo { font-size: 12.5px; color: var(--muted); margin-top: 14px; border-top: 1px solid var(--line); padding-top: 12px; }
+  .universal { margin-top: 10px; }
+  .universal li { margin: 6px 0 6px 16px; }
+  .result { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 16px 18px; margin-bottom: 14px; }
+  .rhead { display: flex; align-items: center; gap: 12px; margin-bottom: 8px; }
+  .rank { font-size: 12px; color: var(--muted); }
+  .rname { font-weight: 700; font-size: 16px; }
+  .rmeta { color: var(--muted); font-size: 12.5px; }
+  .scorebar { position: relative; flex: 1; height: 8px; background: var(--panel2); border-radius: 999px; overflow: hidden; min-width: 120px; }
+  .scorebar > div { position: absolute; inset: 0 auto 0 0; background: linear-gradient(90deg, #38bdf8, #4ade80); border-radius: 999px; }
+  .scorenum { font-weight: 700; font-size: 14px; min-width: 42px; text-align: right; }
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 10px 0 6px; }
+  .chip { font-size: 11.5px; padding: 3px 9px; border-radius: 999px; border: 1px solid var(--line); }
+  .chip.g { color: var(--good); border-color: color-mix(in srgb, var(--good) 40%, transparent); }
+  .chip.b { color: var(--bad); border-color: color-mix(in srgb, var(--bad) 40%, transparent); }
+  .why { font-size: 13px; color: var(--muted); margin: 8px 0; }
+  .bars { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 6px 18px; margin-top: 10px; }
+  .bar { font-size: 11.5px; }
+  .bar .t { display: flex; justify-content: space-between; color: var(--muted); }
+  .bar .tr { height: 5px; background: var(--panel2); border-radius: 999px; margin-top: 2px; overflow: hidden; }
+  .bar .tr > div { height: 100%; border-radius: 999px; }
+  .err { color: var(--bad); font-size: 14px; }
+  footer { margin-top: 30px; color: var(--muted); font-size: 12px; border-top: 1px solid var(--line); padding-top: 16px; }
+  a { color: var(--accent); text-decoration: none; }
+  .mono { font-family: ui-monospace, "Cascadia Code", Consolas, monospace; font-size: 12px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>🪐 Planetary Analog Finder</h1>
+    <span class="badge">NASA Space Apps Challenge</span>
+  </header>
+  <p class="sub">A machine-learning similarity engine that scans <b>50 curated Earth environments</b> — from Atacama dry-limit soils to Lonar's basalt impact crater — and ranks them as analogs for candidate <b>Moon-base</b> and <b>Mars-landing</b> sites, using NASA POWER climate data (2001–2025) plus curated geology, with learned feature weights and an explicit "where the analogy breaks down" report for every match.</p>
+  <p class="status" id="status">Checking service…</p>
+
+  <div class="grid">
+    <div class="panel">
+      <h2>Search</h2>
+      <label for="target">Moon / Mars target</label>
+      <select id="target"></select>
+      <label for="key">API key</label>
+      <input id="key" placeholder="xora_live_…" autocomplete="off" spellcheck="false" />
+      <label for="top">Results</label>
+      <select id="top">
+        <option value="5">Top 5</option>
+        <option value="8">Top 8</option>
+        <option value="12">Top 12</option>
+      </select>
+      <button id="go">Find Earth analogs</button>
+      <p class="hint">
+        Get a key: run <code>npm run key -- --name "your-name"</code> in the project repo (hashed, rate-limited).<br />
+        Full API: <code>GET /api/targets</code>, <code>GET /api/sites</code>, <code>GET /api/model</code>, <code>GET /api/search?target=…</code>
+      </p>
+      <div class="targetinfo" id="targetinfo"></div>
+    </div>
+
+    <div>
+      <div class="panel" style="margin-bottom: 14px">
+        <h2>Where Earth is NOT like the Moon / Mars (always)</h2>
+        <ul class="universal" id="universal"></ul>
+      </div>
+      <div id="results"></div>
+    </div>
+  </div>
+
+  <footer>
+    Data: <a href="https://power.larc.nasa.gov/" target="_blank" rel="noopener">NASA POWER climatology (2001–2025)</a>,
+    MOLA/LOLA/Diviner/REMS/MEDA mission measurements (target values), curated analog literature.
+    Model: ridge-learned weights over expert-labeled analog pairs — <a href="/api/model" target="_blank" rel="noopener">model card</a>.
+    Built for the NASA Space Apps Challenge.
+  </footer>
+</div>
+
+<script>
+  const $ = (id) => document.getElementById(id);
+  const API = "";
+
+  function esc(s) { return String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c])); }
+
+  async function j(url, opts) {
+    const r = await fetch(url, opts);
+    const body = await r.json().catch(() => ({}));
+    if (!r.ok) throw Object.assign(new Error(body?.error?.message || r.statusText), { status: r.status, code: body?.error?.code });
+    return body;
+  }
+
+  function chip(cls, text) { return `<span class="chip ${cls}">${esc(text)}</span>`; }
+
+  function barColor(sim) { return sim >= 0.66 ? "#4ade80" : sim >= 0.4 ? "#fbbf24" : "#f87171"; }
+
+  function renderResult(r) {
+    const bd = [...r.breakdown].sort((a, b) => b.weight - a.weight).slice(0, 12);
+    return `
+    <div class="result">
+      <div class="rhead">
+        <span class="rank">#${r.rank}</span>
+        <div style="flex:1">
+          <div class="rname">${esc(r.site.name)}</div>
+          <div class="rmeta">${esc(r.site.country)} · ${esc(r.site.region || "")} · ${esc(r.site.coords.lat)}°, ${esc(r.site.coords.lon)}° · ${r.site.elevation_m ?? "?"} m elevation</div>
+        </div>
+        <div class="scorebar"><div style="width:${r.score}%"></div></div>
+        <span class="scorenum">${r.score.toFixed(1)}</span>
+      </div>
+      <div class="chips">${r.strengths.slice(0, 3).map((s) => chip("g", s.split(":")[0])).join("")}${r.gaps.slice(0, 2).map((s) => chip("b", s.split(":")[0])).join("")}</div>
+      <div class="why"><b>Why analogous:</b> ${esc(r.why_analog)}</div>
+      <div class="why"><b>Where it breaks down (site-specific):</b> ${esc(r.breakdown_limitations)}</div>
+      ${r.key_studies ? `<div class="why mono">${esc(r.key_studies)}</div>` : ""}
+      <div class="bars">
+        ${bd.map((d) => `
+          <div class="bar">
+            <div class="t"><span>${esc(d.label)}</span><span>${Math.round(d.similarity * 100)}%</span></div>
+            <div class="tr"><div style="width:${Math.round(d.similarity * 100)}%;background:${barColor(d.similarity)}"></div></div>
+            <div class="t" style="font-size:10.5px"><span>site: ${esc(d.site_display)}</span><span>target: ${esc(d.target_display)}</span></div>
+          </div>`).join("")}
+      </div>
+    </div>`;
+  }
+
+  async function init() {
+    try {
+      const health = await j("/api/health");
+      $("status").innerHTML = `Service <b>online</b> — model v${esc(health.model_version)} · ${health.catalog.earth_sites} Earth sites × ${health.catalog.moon_mars_targets} Moon/Mars targets`;
+      const targets = await j("/api/targets");
+      $("target").innerHTML = targets.targets.map((t) => `<option value="${esc(t.key)}">${esc(t.body)} · ${esc(t.name)}</option>`).join("");
+      onTargetChange();
+      $("target").addEventListener("change", onTargetChange);
+      const saved = localStorage.getItem("paf_key");
+      if (saved) $("key").value = saved;
+    } catch (e) {
+      $("status").innerHTML = `<span class="err">Service unreachable: ${esc(e.message)}</span>`;
+    }
+  }
+
+  async function onTargetChange() {
+    const key = $("target").value;
+    const t = (await j("/api/targets")).targets.find((x) => x.key === key);
+    $("targetinfo").innerHTML = `<b>${esc(t.name)}</b><br/>${esc(t.overview)}<br/><span class="mono">${esc(t.sources)}</span>`;
+  }
+
+  $("go").addEventListener("click", async () => {
+    const btn = $("go");
+    const key = $("key").value.trim();
+    if (!key) { $("results").innerHTML = `<div class="err">Enter an API key first. Repo maintainers: <span class="mono">npm run key -- --name "you"</span></div>`; return; }
+    localStorage.setItem("paf_key", key);
+    btn.disabled = true; btn.textContent = "Scanning 50 Earth sites…";
+    try {
+      const res = await j(`/api/search?target=${encodeURIComponent($("target").value)}&top=${$("top").value}`, {
+        headers: { "X-Api-Key": key },
+      });
+      $("universal").innerHTML = (res.target.universal_breakdown || []).map((s) => `<li>${esc(s)}</li>`).join("");
+      $("results").innerHTML = res.results.map(renderResult).join("") +
+        `<p class="hint">Scored ${res.searched_count} sites with model v${esc(res.method.model_version)}. Formula: <span class="mono">${esc(res.method.formula)}</span></p>`;
+    } catch (e) {
+      $("results").innerHTML = `<div class="err">Error ${e.status ?? ""}: ${esc(e.message)}</div>`;
+    } finally {
+      btn.disabled = false; btn.textContent = "Find Earth analogs";
+    }
+  });
+
+  init();
+</script>
+</body>
+</html>

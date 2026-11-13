@@ -1,0 +1,238 @@
+{
+  "meta": {
+    "name": "Planetary Analog Finder \u2014 weighted analog-similarity model",
+    "version": "1.0.0",
+    "trained_at": "2026-11-13T09:42:31+00:00",
+    "algorithm": "Ridge regression on pairwise expert-similarity labels, non-negative normalized feature weights + monotone linear calibration; deployed as an explainable weighted multi-dimension similarity metric",
+    "deployed_formula": "score = clip(calibration_a * sum_i weight_i * s_i + calibration_b, 0, 1); s_i = Gaussian kernel for continuous, 1-|x-t| for binary",
+    "calibration": {
+      "a": 0.8329,
+      "b": 0.1885
+    },
+    "kernel": "Gaussian (sigma = 0.30 x feature span) for continuous; exact-match for binary",
+    "alpha": 1.0,
+    "alpha_grid": [
+      0.03,
+      0.1,
+      0.3,
+      1.0,
+      3.0,
+      10.0,
+      30.0,
+      100.0
+    ],
+    "n_pairs": 47,
+    "n_features": 20,
+    "labels_scale": "expert similarity 0-1 (see data/expert_pairs.json)"
+  },
+  "metrics": {
+    "mae": 0.0971,
+    "rmse": 0.1118,
+    "r2": 0.2976,
+    "pearson_r": 0.5455,
+    "loo_mae": 0.1176,
+    "baseline_mean_predictor_mae": 0.1131
+  },
+  "features": [
+    {
+      "key": "temp_mean_c",
+      "label": "Mean annual air temperature (2 m)",
+      "unit": "\u00b0C",
+      "kind": "continuous",
+      "source": "NASA POWER",
+      "weight": 0.0765,
+      "sigma": 32.595,
+      "span": 108.65
+    },
+    {
+      "key": "temp_max_c",
+      "label": "Warmest-month mean daily max temperature",
+      "unit": "\u00b0C",
+      "kind": "continuous",
+      "source": "NASA POWER",
+      "weight": 0.0,
+      "sigma": 40.5,
+      "span": 135.0
+    },
+    {
+      "key": "temp_min_c",
+      "label": "Coldest-month mean daily min temperature",
+      "unit": "\u00b0C",
+      "kind": "continuous",
+      "source": "NASA POWER",
+      "weight": 0.0683,
+      "sigma": 74.205,
+      "span": 247.35
+    },
+    {
+      "key": "diurnal_range_c",
+      "label": "Mean diurnal temperature range",
+      "unit": "\u00b0C",
+      "kind": "continuous",
+      "source": "NASA POWER",
+      "weight": 0.1063,
+      "sigma": 86.295,
+      "span": 287.65
+    },
+    {
+      "key": "precip_mm_yr",
+      "label": "Mean annual precipitation",
+      "unit": "mm/yr",
+      "kind": "continuous",
+      "source": "NASA POWER",
+      "weight": 0.0,
+      "sigma": 508.44,
+      "span": 1694.8
+    },
+    {
+      "key": "wind_mean_ms",
+      "label": "Mean wind speed (2 m)",
+      "unit": "m/s",
+      "kind": "continuous",
+      "source": "NASA POWER",
+      "weight": 0.0,
+      "sigma": 2.4,
+      "span": 8.0
+    },
+    {
+      "key": "rh_min_pct",
+      "label": "Minimum monthly mean relative humidity",
+      "unit": "%",
+      "kind": "continuous",
+      "source": "NASA POWER",
+      "weight": 0.0,
+      "sigma": 27.705,
+      "span": 92.35
+    },
+    {
+      "key": "solar_kwh_m2_day",
+      "label": "Mean daily surface solar irradiance",
+      "unit": "kWh/m2/day",
+      "kind": "continuous",
+      "source": "NASA POWER",
+      "weight": 0.0,
+      "sigma": 2.337,
+      "span": 7.79
+    },
+    {
+      "key": "relief_m",
+      "label": "Local relief within study area",
+      "unit": "m",
+      "kind": "continuous",
+      "source": "Curated (DEMs/literature)",
+      "weight": 0.1213,
+      "sigma": 1494.0,
+      "span": 4980.0
+    },
+    {
+      "key": "barrenness",
+      "label": "Barrenness index (0 vegetated - 1 abiotic)",
+      "unit": "0-1",
+      "kind": "continuous",
+      "source": "Curated",
+      "weight": 0.0664,
+      "sigma": 0.21,
+      "span": 0.7
+    },
+    {
+      "key": "volcanic_basalt",
+      "label": "Basaltic volcanic terrain",
+      "unit": "0-1",
+      "kind": "binary",
+      "source": "Curated (geologic maps)",
+      "weight": 0.0587,
+      "sigma": null,
+      "span": null
+    },
+    {
+      "key": "impact_crater",
+      "label": "Impact crater structure",
+      "unit": "0-1",
+      "kind": "binary",
+      "source": "Curated (geologic maps)",
+      "weight": 0.1345,
+      "sigma": null,
+      "span": null
+    },
+    {
+      "key": "aeolian_dunes",
+      "label": "Dune fields / yardangs (aeolian)",
+      "unit": "0-1",
+      "kind": "binary",
+      "source": "Curated (geologic maps)",
+      "weight": 0.048,
+      "sigma": null,
+      "span": null
+    },
+    {
+      "key": "salt_flat",
+      "label": "Evaporite / salt flat terrain",
+      "unit": "0-1",
+      "kind": "binary",
+      "source": "Curated (geologic maps)",
+      "weight": 0.1008,
+      "sigma": null,
+      "span": null
+    },
+    {
+      "key": "permafrost_ice",
+      "label": "Permafrost / ground ice",
+      "unit": "0-1",
+      "kind": "binary",
+      "source": "Curated (geologic maps)",
+      "weight": 0.1272,
+      "sigma": null,
+      "span": null
+    },
+    {
+      "key": "subsurface_cave",
+      "label": "Caves / lava tubes",
+      "unit": "0-1",
+      "kind": "binary",
+      "source": "Curated (geologic maps)",
+      "weight": 0.0832,
+      "sigma": null,
+      "span": null
+    },
+    {
+      "key": "fluvial_paleolake",
+      "label": "Paleolake / fluvial landforms",
+      "unit": "0-1",
+      "kind": "binary",
+      "source": "Curated (geologic maps)",
+      "weight": 0.0,
+      "sigma": null,
+      "span": null
+    },
+    {
+      "key": "hydrothermal_acid",
+      "label": "Hydrothermal / acid-sulfate alteration",
+      "unit": "0-1",
+      "kind": "binary",
+      "source": "Curated (geologic maps)",
+      "weight": 0.0,
+      "sigma": null,
+      "span": null
+    },
+    {
+      "key": "ophiolite_olivine",
+      "label": "Ophiolite / olivine-rich crust",
+      "unit": "0-1",
+      "kind": "binary",
+      "source": "Curated (geologic maps)",
+      "weight": 0.0089,
+      "sigma": null,
+      "span": null
+    },
+    {
+      "key": "extremophile_studies",
+      "label": "Extremophile / astrobiology studies",
+      "unit": "0-1",
+      "kind": "binary",
+      "source": "Curated (literature)",
+      "weight": 0.0,
+      "sigma": null,
+      "span": null
+    }
+  ]
+}

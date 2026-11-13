@@ -1,0 +1,3 @@
+# Training environment only (the deployed API has zero dependencies)
+scikit-learn>=1.3
+numpy>=1.26

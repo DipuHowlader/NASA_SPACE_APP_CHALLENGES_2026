@@ -1,0 +1,35 @@
+name: CI (data pipeline + model + ranking checks)
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  pipeline:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Validate committed model artifacts
+        run: node scripts/test_ranking.mjs
+
+      - name: Rebuild dataset + retrain model
+        run: |
+          pip install -r requirements.txt
+          python scripts/build_dataset.py
+          python scripts/train_model.py
+
+      - name: Re-run ranking sanity checks
+        run: node scripts/test_ranking.mjs
+
+      - name: Key registry smoke test
+        run: node scripts/generate_key.mjs --list
